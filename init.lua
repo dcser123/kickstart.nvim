@@ -104,6 +104,14 @@ vim.opt.number = true
 --  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
 
+vim.keymap.set('n', '<leader>tn', function()
+  if vim.wo.relativenumber then
+    vim.wo.relativenumber = false
+  else
+    vim.wo.relativenumber = true
+  end
+end, { desc = 'Toggle relative line numbers' })
+
 vim.opt.shiftwidth = 4
 
 vim.opt.tabstop = 4
@@ -166,6 +174,7 @@ vim.opt.scrolloff = 10
 -- See `:help 'confirm'`
 vim.opt.confirm = true
 
+vim.opt.termguicolors = true
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 vim.keymap.set('n', '<leader>cc', '^C', { desc = 'Change from start of line' })
@@ -489,6 +498,7 @@ require('lazy').setup({
       -- Allows extra capabilities provided by nvim-cmp
       'hrsh7th/cmp-nvim-lsp',
     },
+    event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       -- Brief aside: **What is LSP?**
       --
@@ -909,12 +919,8 @@ require('lazy').setup({
           comments = { italic = false }, -- Disable italics in comments
         },
         on_colors = function(colors)
-          colors.border = '#3b4261'
+          colors.border = colors.fg_gutter
         end,
-        -- on_highlights = function(hl, colors)
-        --   -- Change the vertical split border color here:
-        --   hl.WinSeparator = { fg = '#3b4261', bold = true }
-        -- end,
       }
 
       -- Load the colorscheme here.
@@ -963,6 +969,28 @@ require('lazy').setup({
       require('mini.align').setup()
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
+      require('mini.bufremove').setup {
+        keys = {
+          {
+            '<leader>bd',
+            function()
+              local bd = require('mini.bufremove').delete
+              if vim.bo.modified then
+                local choice = vim.fn.confirm(('Save changes to %q?'):format(vim.fn.bufname()), '&Yes\n&No\n&Cancel')
+                if choice == 1 then -- Yes
+                  vim.cmd.write()
+                  bd(0)
+                elseif choice == 2 then -- No
+                  bd(0, true)
+                end
+              else
+                bd(0)
+              end
+            end,
+            desc = 'Delete Buffer',
+          },
+        },
+      }
     end,
   },
   { -- Highlight, edit, and navigate code
@@ -1015,12 +1043,11 @@ require('lazy').setup({
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
-
-  -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
-  --    This is the easiest way to modularize your config.
-  --
-  --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+    -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
+    --    This is the easiest way to modularize your config.
+    --
+    --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
+    { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
