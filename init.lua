@@ -107,6 +107,13 @@ vim.opt.relativenumber = true
 vim.opt.textwidth = 0
 
 vim.opt.wrapmargin = 0
+vim.keymap.set('n', '<leader>tn', function()
+  if vim.wo.relativenumber then
+    vim.wo.relativenumber = false
+  else
+    vim.wo.relativenumber = true
+  end
+end, { desc = 'Toggle relative line numbers' })
 
 vim.opt.shiftwidth = 4
 
@@ -172,6 +179,7 @@ vim.opt.scrolloff = 10
 -- See `:help 'confirm'`
 vim.opt.confirm = true
 
+vim.opt.termguicolors = true
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 vim.keymap.set('n', '<leader>cc', '^C', { desc = 'Change from start of line' })
@@ -501,6 +509,7 @@ require('lazy').setup({
       -- Allows extra capabilities provided by nvim-cmp
       'hrsh7th/cmp-nvim-lsp',
     },
+    event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       -- Brief aside: **What is LSP?**
       --
@@ -907,34 +916,30 @@ require('lazy').setup({
     end,
   },
 
-  -- { -- You can easily change to a different colorscheme.
-  --   -- Change the name of the colorscheme plugin below, and then
-  --   -- change the command in the config to whatever the name of that colorscheme is.
-  --   --
-  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-  --   'folke/tokyonight.nvim',
-  --   priority = 1000, -- Make sure to load this before all the other start plugins.
-  --   config = function()
-  --     ---@diagnostic disable-next-line: missing-fields
-  --     require('tokyonight').setup {
-  --       styles = {
-  --         comments = { italic = false }, -- Disable italics in comments
-  --       },
-  --       on_colors = function(colors)
-  --         colors.border = '#3b4261'
-  --       end,
-  --       -- on_highlights = function(hl, colors)
-  --       --   -- Change the vertical split border color here:
-  --       --   hl.WinSeparator = { fg = '#3b4261', bold = true }
-  --       -- end,
-  --     }
-  --
-  --     -- Load the colorscheme here.
-  --     -- Like many other themes, this one has different styles, and you could load
-  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-  --     vim.cmd.colorscheme 'tokyonight-night'
-  --   end,
-  -- },
+  { -- You can easily change to a different colorscheme.
+    -- Change the name of the colorscheme plugin below, and then
+    -- change the command in the config to whatever the name of that colorscheme is.
+    --
+    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+    'folke/tokyonight.nvim',
+    priority = 1000, -- Make sure to load this before all the other start plugins.
+    config = function()
+      ---@diagnostic disable-next-line: missing-fields
+      require('tokyonight').setup {
+        styles = {
+          comments = { italic = false }, -- Disable italics in comments
+        },
+        on_colors = function(colors)
+          colors.border = colors.fg_gutter
+        end,
+      }
+
+      -- Load the colorscheme here.
+      -- Like many other themes, this one has different styles, and you could load
+      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      vim.cmd.colorscheme 'tokyonight-night'
+    end,
+  },
 
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
@@ -975,6 +980,28 @@ require('lazy').setup({
       require('mini.align').setup()
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
+      require('mini.bufremove').setup {
+        keys = {
+          {
+            '<leader>bd',
+            function()
+              local bd = require('mini.bufremove').delete
+              if vim.bo.modified then
+                local choice = vim.fn.confirm(('Save changes to %q?'):format(vim.fn.bufname()), '&Yes\n&No\n&Cancel')
+                if choice == 1 then -- Yes
+                  vim.cmd.write()
+                  bd(0)
+                elseif choice == 2 then -- No
+                  bd(0, true)
+                end
+              else
+                bd(0)
+              end
+            end,
+            desc = 'Delete Buffer',
+          },
+        },
+      }
     end,
   },
   { -- Highlight, edit, and navigate code
