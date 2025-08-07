@@ -189,6 +189,8 @@ vim.o.termguicolors = true
 --  See `:help vim.keymap.set()`
 vim.keymap.set('n', '<leader>cc', '^C', { desc = 'Change from start of line' })
 
+vim.keymap.set('n', '<leader>g', '<cmd>Neogit<CR>', { desc = 'Open [N]eogit' })
+
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -797,6 +799,7 @@ require('lazy').setup({
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
+        c = { 'clang-format' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
