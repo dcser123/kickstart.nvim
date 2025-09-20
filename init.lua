@@ -189,7 +189,9 @@ vim.o.termguicolors = true
 --  See `:help vim.keymap.set()`
 vim.keymap.set('n', '<leader>cc', '^C', { desc = 'Change from start of line' })
 
-vim.keymap.set('n', '<leader>g', '<cmd>Neogit<CR>', { desc = 'Open [N]eogit' })
+vim.keymap.set('n', '<leader>g', '<cmd>Neogit<CR>', { desc = 'Open Neo[G]it' })
+vim.keymap.set('n', '<leader>k', '<C-a>', { desc = 'Increment number' })
+vim.keymap.set('n', '<leader>j', '<C-x>', { desc = 'Decrement number' })
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
@@ -950,7 +952,16 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      require('mini.surround').setup {
+        mappings = {
+          add = 'ma', -- Add surrounding in Normal and Visual modes
+          delete = 'md', -- Delete surrounding
+          find = 'mf', -- Find surrounding (to the right)
+          find_left = 'mF', -- Find surrounding (to the left)
+          highlight = 'mh', -- Highlight surrounding
+          replace = 'mr', -- Replace surrounding
+        },
+      }
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
