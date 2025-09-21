@@ -189,8 +189,6 @@ vim.o.termguicolors = true
 --  See `:help vim.keymap.set()`
 vim.keymap.set('n', '<leader>cc', '^C', { desc = 'Change from start of line' })
 
-vim.keymap.set('n', '<leader>g', '<cmd>Neogit<CR>', { desc = 'Open [N]eogit' })
-
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -371,6 +369,7 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
+        { 's', group = '[S]urround' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
     },
@@ -510,7 +509,15 @@ require('lazy').setup({
       -- Automatically install LSPs and related tools to stdpath for Neovim
       -- Mason must be loaded before its dependents so we need to set it up here.
       -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
-      { 'mason-org/mason.nvim', opts = {} },
+      {
+        'mason-org/mason.nvim',
+        opts = {
+          registries = {
+            'github:mason-org/mason-registry',
+            'github:Crashdummyy/mason-registry',
+          },
+        },
+      },
       'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
@@ -771,12 +778,12 @@ require('lazy').setup({
     cmd = { 'ConformInfo' },
     keys = {
       {
-        '<leader>f',
+        'gw',
         function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end,
-        mode = '',
-        desc = '[F]ormat buffer',
+        mode = 'n',
+        desc = 'Format buffer',
       },
     },
     opts = {
@@ -934,66 +941,6 @@ require('lazy').setup({
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
-  { -- Collection of various small independent plugins/modules
-    'echasnovski/mini.nvim',
-    config = function()
-      -- Better Around/Inside textobjects
-      --
-      -- Examples:
-      --  - va)  - [V]isually select [A]round [)]paren
-      --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
-      --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
-
-      -- Add/delete/replace surroundings (brackets, quotes, etc.)
-      --
-      -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
-      -- - sd'   - [S]urround [D]elete [']quotes
-      -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
-
-      -- Simple and easy statusline.
-      --  You could remove this setup call if you don't like it,
-      --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
-
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
-
-      require('mini.align').setup()
-      -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
-      require('mini.bufremove').setup {
-        keys = {
-          {
-            '<leader>bd',
-            function()
-              local bd = require('mini.bufremove').delete
-              if vim.bo.modified then
-                local choice = vim.fn.confirm(('Save changes to %q?'):format(vim.fn.bufname()), '&Yes\n&No\n&Cancel')
-                if choice == 1 then -- Yes
-                  vim.cmd.write()
-                  bd(0)
-                elseif choice == 2 then -- No
-                  bd(0, true)
-                end
-              else
-                bd(0)
-              end
-            end,
-            desc = 'Delete Buffer',
-          },
-        },
-      }
-    end,
-  },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -1080,5 +1027,15 @@ require('lazy').setup({
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
 
-vim.env.DOTNET_ROOT = '/usr/local/share/dotnet'
-vim.env.PATH = vim.env.PATH .. ':/usr/local/share/dotnet'
+if vim.fn.has 'macunix' == 1 then
+  -- Set DOTNET_ROOT for macOS
+  vim.env.DOTNET_ROOT = '/usr/local/share/dotnet'
+  -- Add dotnet to PATH if not already included
+  if not string.find(vim.env.PATH, vim.env.DOTNET_ROOT, 1, true) then
+    vim.env.PATH = vim.env.PATH .. ':' .. vim.env.DOTNET_ROOT
+  end
+end
+if vim.fn.has 'win32' == 1 then
+  vim.env.DOTNET_ROOT = 'C:\\Program Files\\dotnet'
+  vim.env.PATH = vim.env.DOTNET_ROOT .. ';' .. vim.env.PATH
+end
