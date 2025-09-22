@@ -187,7 +187,8 @@ vim.o.confirm = true
 vim.o.termguicolors = true
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
-vim.keymap.set('n', '<leader>cc', '^C', { desc = 'Change from start of line' })
+vim.keymap.set('n', '<leader>k', '<C-a>', { desc = 'Increment number' })
+vim.keymap.set('n', '<leader>j', '<C-x>', { desc = 'Decrement number' })
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
