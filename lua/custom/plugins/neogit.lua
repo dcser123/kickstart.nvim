@@ -10,4 +10,10 @@ return {
     -- "echasnovski/mini.pick",         -- optional
     -- "folke/snacks.nvim",             -- optional
   },
+  config = function()
+    local neogit = require 'neogit'
+    vim.keymap.set('n', '<leader>g', function()
+      neogit.open()
+    end, { desc = 'Open neo[G]it' })
+  end,
 }

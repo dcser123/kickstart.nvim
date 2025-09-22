@@ -24,7 +24,7 @@ return {
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
     'mfussenegger/nvim-dap-python',
-    'Cliffback/netcoredbg-macOS-arm64.nvim',
+    -- 'Cliffback/netcoredbg-macOS-arm64.nvim',
   },
   keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
@@ -82,6 +82,17 @@ return {
   config = function()
     local dap = require 'dap'
     local dapui = require 'dapui'
+
+    dap.configurations.cs = {
+      {
+        type = 'coreclr',
+        name = 'launch - netcoredbg',
+        args = function()
+          local input = vim.fn.input 'Program arguments: '
+          return vim.split(input, ' +')
+        end,
+      },
+    }
     -- vim.g.dotnet_build_project = function()
     --   local default_path = vim.fn.getcwd() .. '/'
     --   if vim.g['dotnet_last_proj_path'] ~= nil then
@@ -158,7 +169,9 @@ return {
       },
     }
     require('dap-python').setup 'python3'
-    require('netcoredbg-macOS-arm64').setup(require 'dap')
+    if vim.fn.has 'macunix' == 1 then
+      require('netcoredbg-macOS-arm64').setup(require 'dap')
+    end
 
     -- Dap UI setup
     -- For more information, see |:help nvim-dap-ui|
